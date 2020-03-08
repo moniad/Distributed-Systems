@@ -1,8 +1,9 @@
 import select
 import threading
 
-from Lab1.homework.ClientOnServerSide import ClientOnServerSide
 from Lab1.homework.PythonTcpClient import MySocket, Channel
+from Lab1.homework.TcpClientOnServerSide import TcpClientOnServerSide
+from Lab1.homework.UdpClientOnServerSide import UdpClientOnServerSide
 
 
 class ServerSocket(MySocket):
@@ -11,7 +12,10 @@ class ServerSocket(MySocket):
     def __init__(self):
         super().__init__()
 
-        self.clients = dict()  # dict of ClientsOnTheServerSide, identifying clients by nickname (key in dict)
+        self.tcp_clients = dict()  # dicts of ClientsOnTheServerSide, identifying clients by fd (key in dict)
+        self.udp_clients = dict()
+        self.multicast_clients = dict()
+
         self.tcp_sock.bind((self.SERVER_IP, self.TCP_PORT))
         self.tcp_sock.listen(ServerSocket.MAX_CLIENTS_COUNT)
 
@@ -35,41 +39,38 @@ class ServerSocket(MySocket):
         # register client socket for reading
         self.e.register(fd, select.EPOLLIN)
 
-        self.clients[nickname] = ClientOnServerSide(client_socket, fd)
+        self.tcp_clients[fd] = TcpClientOnServerSide(client_socket, nickname)
 
     def register_udp_or_multicast_client(self, fd):
-        nickname, addr = self.receive_message_via_udp()
-        client = self.clients[nickname]
+        if fd == self.udp_sock.fileno():
+            nickname, addr = self.receive_message_via_udp()
+            new_client = UdpClientOnServerSide(addr, nickname)
+            self.udp_clients[fd] = new_client
+        else:  # if fd == self.multicast_sock.fileno():  # multicast todo
+            print("MULTICAST")
+            # nickname, addr = self.receive_message_via_multicast() todo
+            # new_client = MulticastClientOnServerSide(addr, nickname)
+            # self.multicast_clients[fd] = new_client
+            pass
+        # else: todo
+        #     print("Unknown sevices")
 
-        if addr == self.MULTICAST_IP:
-            new_client = ClientOnServerSide(client.tcp_sock, client.tcp_fd, multicast_address=addr, multicast_fd=fd)
-
-            del self.clients[nickname]
-            self.clients[nickname] = new_client
-
-        elif addr == self.SERVER_IP:  # UDP
-            new_client = ClientOnServerSide(client.tcp_sock, client.tcp_fd, addr, fd)
-
-            del self.clients[nickname]
-            self.clients[nickname] = new_client
-            print("ON REGISTER ---- nickname: " + str(nickname) + ", addr : " + str(self.clients[nickname].udp_address))
-        else:
-            print("Unknown sevices")
-
-    def send_msg_to_all_clients_excluding_sender(self, nickname, channel):
-        client = self.clients[nickname]
-        print('client data:  ' + str(client))
+    def send_msg_to_all_clients_excluding_sender(self, fd, channel):
         if channel == Channel.TCP:
-            msg = self.receive_message_via_tcp(client.tcp_sock)
+            client = self.tcp_clients[fd]
+            msg = self.receive_message_via_tcp(client.sock_or_addr)
         elif channel == Channel.UDP:
+            client = self.udp_clients[fd]
             msg, addr = self.receive_message_via_udp()
         else:  # multicast
-            msg, addr = 'DEFAULT MULTICAST MSG!!! FIXME', 'addr'
+            client = self.multicast_clients[fd]
+            msg, addr = 'DEFAULT MULTICAST MSG!!! FIXME', 'addr'  #todo
 
-        msg_to_send = ServerSocket.create_msg_from(nickname, msg)
+        print('client data:  ' + str(client))
+        msg_to_send = ServerSocket.create_msg_from(client.nickname, msg)
         print("msg_to_send: " + msg_to_send)
 
-        recipients = ServerSocket.get_recipients(self, nickname)
+        recipients = ServerSocket.get_recipients(self, fd, channel)
 
         for recip in recipients:
             try:
@@ -87,23 +88,31 @@ class ServerSocket(MySocket):
             except BrokenPipeError:
                 print("Broken Pipe. Client must have exited")
 
-    @staticmethod
-    def find_client_channel(client, fd):
-        if client.tcp_fd == fd:
-            return Channel.TCP
-        elif client.udp_fd == fd:
-            return Channel.UDP
-        elif client.multicast_fd == fd:
-            return Channel.MULTICAST
-        else:
-            return ValueError('Channel not supported!')
+    # @staticmethod
+    # def find_client_channel(client, fd):
+    #     if client.tcp_fd == fd:
+    #         return Channel.TCP
+    #     elif client.udp_fd == fd:
+    #         return Channel.UDP
+    #     elif client.multicast_fd == fd:
+    #         return Channel.MULTICAST
+    #     else:
+    #         return ValueError('Channel not supported!')
 
-    def get_recipients(self, nickname):
-        nicks = [n for n in self.clients.keys() if n != nickname]
-        recipients = [self.clients[n] for n in nicks]
+    def get_recipients(self, fd, channel):
+        if channel == Channel.TCP:
+            fds = [tcp_fd for tcp_fd in self.tcp_clients.keys() if tcp_fd != fd]
+            recipients = [self.tcp_clients[tcp_fd] for tcp_fd in fds]
+        elif channel == Channel.UDP:
+            fds = [udp_fd for udp_fd in self.udp_clients.keys() if udp_fd != fd]
+            recipients = [self.udp_clients[udp_fd] for udp_fd in fds]
+        else:  # multicast
+            fds = [multicast_fd for multicast_fd in self.multicast_clients.keys() if multicast_fd != fd]
+            recipients = [self.multicast_clients[multicast_fd] for multicast_fd in fds]
 
-        print("recipient nicks: " + str([n for n in nicks]))
-        print("recipient udp_addresses: " + str([x.udp_address for x in recipients]))
+        print("recipient nicks: " + str([r.nickname for r in recipients]))
+        # print("recipient udp_addresses: " + str([x.udp_address for x in recipients]))
+        # print("FIRST recipient addr: " + str(recipients[0].udp_address))
 
         return recipients
 
@@ -111,12 +120,12 @@ class ServerSocket(MySocket):
     def create_msg_from(nickname, msg):
         return str(nickname + ": " + msg)
 
-    def close_socket(self):
-        for client in self.clients:
-            client.send_message_via_tcp('SERVER: Closing connection')
-            client.close()
-        self.tcp_sock.close()
-        print("Server exiting")
+    # def close_socket(self):
+    #     for client in self.tcp_clients:
+    #         client.send_message_via_tcp('SERVER: Closing connection')
+    #         client.close()
+    #     self.tcp_sock.close()
+    #     print("Server exiting")
 
     def run(self):
         connection_worker = threading.Thread(target=self.accept_connections)
@@ -136,24 +145,24 @@ class ServerSocket(MySocket):
                 for fd, event_type in events:
                     if event_type & select.EPOLLIN:
                         print("fd: " + str(fd))
-                        for nickname in self.clients.keys():
-                            client = self.clients[nickname]
-                            if client.tcp_fd == fd:
-                                t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
-                                                     args=(nickname, Channel.TCP))
-                                t.start()
-                                break
-                            elif client.udp_fd == fd:
-                                t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
-                                                     args=(nickname, Channel.UDP))
-                                t.start()
-                                break
-                            elif client.multicast_fd == fd:
-                                t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
-                                                     args=(nickname, Channel.MULTICAST))
-                                t.start()
-                                break
-                        else:  # first time msg is sent via UDP or MULTICAST???? TODO!!!!
+                        if fd in self.tcp_clients.keys():
+                            t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
+                                                 args=(fd, Channel.TCP))
+                            t.start()
+                            print("TCP - found")
+                            break
+                        elif fd in self.udp_clients.keys():
+                            t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
+                                                 args=(fd, Channel.UDP))
+                            t.start()
+                            print("UDP - found")
+                        elif fd in self.multicast_clients.keys():
+                            t = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
+                                                 args=(fd, Channel.MULTICAST))
+                            t.start()
+                            print("MULTI - found")
+                            break
+                        else:
                             print("Client not registered yet. Let's do it")
                             self.register_udp_or_multicast_client(fd)
                             # we don't send client's nickname to all people

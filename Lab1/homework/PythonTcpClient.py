@@ -13,11 +13,11 @@ class Channel(Enum):
 
 class MySocket:
     MSG_SIZE = 1024
-    SERVER_IP = 'localhost'
+    SERVER_IP = '127.0.0.1'
     MULTICAST_IP = '224.0.0.7'  # todo
-    TCP_PORT = 8126
+    TCP_PORT = 8127
     UDP_PORT = 9091
-    EPOLL_TIMEOUT = 5
+    EPOLL_TIMEOUT = 1
 
     def __init__(self):
         self.tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
