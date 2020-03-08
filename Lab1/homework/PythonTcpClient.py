@@ -61,7 +61,7 @@ import socket
 class MySocket:
     MSG_SIZE = 1024
     SERVER_IP = 'localhost'
-    PORT = 8085
+    PORT = 8087
     DEFAULT_NICKNAME = 'default_nickname'
 
     def __init__(self):

@@ -27,23 +27,21 @@ class ServerSocket(MySocket):
         nickname = self.receive_message(client_socket)
         print("New client: " + nickname + " " + str(address[0]) + ":" + str(address[1]) + "!")
 
-        # new_msg = self.receive_message(client_socket) todo: remove
-        # print("new msg: " + new_msg)
-
         fd = client_socket.fileno()
         # register client socket for reading
         self.e.register(fd, select.EPOLLIN)
 
         self.clients[fd] = ClientOnServerSide(client_socket, address, nickname)
 
-    def send_msg_to_all_clients_excluding_sender(self, client, msg):
-        self.receive_message(client.sock)
+    def send_msg_to_all_clients_excluding_sender(self, fd):
+        client = self.clients[fd]
+        msg = self.receive_message(client.sock)
 
         msg_to_send = ServerSocket.create_msg_from(client.nickname, msg)
         print("msg_to_send: " + msg_to_send)
 
-        recipients = [cl for cl in self.clients.values() if cl != client]
-        print("recipients: " + str(recipients))
+        recipients = [self.clients[k] for k in self.clients.keys() if k != fd]
+        print("recipients: " + str(recipients.__str__))
 
         for recip in recipients:
             recip.sock.send(bytes(msg_to_send, 'utf8'))
@@ -78,10 +76,10 @@ class ServerSocket(MySocket):
                 print("events: " + str(events))
                 for fd, event_type in events:
                     if event_type & select.EPOLLIN:
-                        client = self.clients[fd]
-                        print("client: " + str(client))
+                        print("client: " + str(self.clients[fd]))
+
                         sender = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
-                                                  args=(client, self.receive_message(client.sock)))
+                                                  args=(fd,))
                         sender.start()
         except KeyboardInterrupt as e:
             print('Exiting')
