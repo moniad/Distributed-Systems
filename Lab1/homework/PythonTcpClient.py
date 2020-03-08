@@ -1,95 +1,63 @@
-# import socket
-# import threading
-# from time import sleep
-#
-# BUFFER_SIZE = 1024
-#
-# PORT = 8008
-# server_IP = "localhost"
-#
-# tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# tcp_server.connect((server_IP, PORT))
-# can_receive_messages = False
-#
-# udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
-#
-# def tcp_sender():
-#     tcp_server.send(bytes(nickname, 'utf8'))
-#
-#     while True:
-#         msg = input()
-#         if msg == 'q':
-#             print("Quitting...")
-#             break
-#         elif msg == 'u':
-#             udp_sender()
-#         else:
-#             tcp_server.send(bytes(msg, 'utf8'))
-#         # print('You sent a message: ' + msg)
-#     tcp_server.close()
-#
-#
-# def tcp_receiver():
-#     while True:
-#         data = tcp_server.recv(1024)
-#         print(str(data, 'utf8'))
-#
-#
-# def udp_sender():
-#     udp_server.sendto(bytes(nickname, 'utf8'), (server_IP, PORT))
-#
-#     msg = input()
-#     if msg == 'q':
-#         print("Quitting...")
-#
-#     udp_server.sendto(bytes(msg, 'utf8'), (server_IP, PORT))
-#
-#
-# def udp_receiver():
-#     while True:
-#         data, addr = udp_server.recvfrom(BUFFER_SIZE)
-#         print(str(data, 'utf8'))
-#
-#
 import select
 import socket
-
-# right now only for TCP
 import threading
+
+from enum import Enum
+
+
+class Channel(Enum):
+    TCP = 'T',
+    UDP = 'U',
+    MULTICAST = 'M'
 
 
 class MySocket:
     MSG_SIZE = 1024
     SERVER_IP = 'localhost'
-    PORT = 8091
+    MULTICAST_IP = '224.0.0.7'  # todo
+    TCP_PORT = 8126
+    UDP_PORT = 9091
     EPOLL_TIMEOUT = 5
 
     def __init__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def send_message(self, message):
-        self.sock.send(bytes(message, 'utf8'))
+    def send_message_via_tcp(self, message):
+        self.tcp_sock.send(bytes(message, 'utf8'))
 
-    def receive_message(self, sock):
-        return str(sock.recv(self.MSG_SIZE), 'utf8')  # adjust to epoll
+    def send_message_via_udp(self, message, addr):
+        self.udp_sock.sendto(bytes(message, 'utf8'), addr)
+
+    def receive_message_via_tcp(self, sock):
+        return str(sock.recv(self.MSG_SIZE), 'utf8')
+
+    def receive_message_via_udp(self):
+        msg, addr = self.udp_sock.recvfrom(self.MSG_SIZE)
+        return str(msg, 'utf8'), addr
 
     def close_socket(self):
         print("Default Exiting!!")
-        # self.sock.close()
+        # self.tcp_sock.close()
 
 
 class ClientSocket(MySocket):
     def __init__(self, nickname):
         super().__init__()
-        self.sock.connect((self.SERVER_IP, self.PORT))
+        self.tcp_sock.connect((self.SERVER_IP, self.TCP_PORT))
         self.nickname = nickname
         self.e = select.epoll()
-        fd = self.sock.fileno()
+
+        # tcp
+        fd = self.tcp_sock.fileno()
         self.e.register(fd, select.EPOLLIN)
+
         self.channels = dict()
-        self.channels[fd] = self.sock
+        self.channels[fd] = self.tcp_sock
         # self.channels[self.multicast_sock.fileno()] = self.multicast_sock todo
+
+        self.has_sent_via_udp = False
+        self.has_sent_via_multicast = False
 
         self.run()
 
@@ -97,7 +65,7 @@ class ClientSocket(MySocket):
         return self.nickname
 
     def close_socket(self):
-        self.sock.close()
+        self.tcp_sock.close()
         print("Client exiting")
 
     def run(self):
@@ -107,7 +75,7 @@ class ClientSocket(MySocket):
         poll_worker.start()
 
     def sender(self):
-        self.send_message(nickname)
+        self.send_message_via_tcp(nickname)
 
         try:
             while True:
@@ -116,11 +84,26 @@ class ClientSocket(MySocket):
                     print("Quitting...")
                     break
                 elif msg == 'u':
-                    # todo: send via udp!
-                    pass
+                    msg = input('Give me your UDP msg: ')
+                    if not self.has_sent_via_udp:
+                        self.send_message_via_udp(nickname, (self.SERVER_IP, self.UDP_PORT))
+                        print('[UDP] You sent your NICKNAME: ' + nickname)
+                        self.has_sent_via_udp = True
+
+                    self.send_message_via_udp(msg, (self.SERVER_IP, self.UDP_PORT))
+                    print('[UDP] You sent a message: ' + msg)
+
+                elif msg == 'm':
+                    msg = input('Give me your MULTICAST msg: ')
+                    if not self.has_sent_via_multicast:
+                        # self.send_message_via_multicast(nickname, (self.MULTICAST_IP, self.UDP_PORT)) todo
+                        self.has_sent_via_multicast = True
+                    # self.send_message_via_multicast(msg, (self.MULTICAST_IP, self.UDP_PORT)) todo
+                    print('[MULTICAST] You sent a message: ' + msg)
                 else:
-                    self.send_message(msg)
-                print('You sent a message: ' + msg)
+                    self.send_message_via_tcp(msg)
+                    print('[TCP] You sent a message: ' + msg)
+
         except KeyboardInterrupt:
             self.close_socket()
 
@@ -130,7 +113,7 @@ class ClientSocket(MySocket):
                 events = self.e.poll(self.EPOLL_TIMEOUT)
                 for fd, event_type in events:
                     if event_type & select.EPOLLIN:
-                        print(self.receive_message(self.channels[fd]))
+                        print(self.receive_message_via_tcp(self.channels[fd]))
         except KeyboardInterrupt:
             print('Exiting')
 
@@ -140,20 +123,3 @@ if __name__ == '__main__':
     print("Now you can use this chat!")
 
     client_socket = ClientSocket(nickname)
-
-#     todo: add client_sender_worker who checks for message == 'U' - if so, then message is sent via UDP socket
-#
-#     tcp_sending_thread = threading.Thread(target=tcp_sender)
-#     tcp_receiving_thread = threading.Thread(target=tcp_receiver)
-#
-#     udp_sending_thread = threading.Thread(target=udp_sender)
-#     udp_receiving_thread = threading.Thread(target=udp_receiver)
-#
-#     tcp_sending_thread.start()
-#     tcp_receiving_thread.start()
-#
-#     while True:
-#         sleep(5)
-#         pass
-#
-#     # server.close()
