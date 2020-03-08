@@ -55,17 +55,15 @@
 
 import socket
 
-
 # right now only for TCP
 
-#
+
 class MySocket:
     MSG_SIZE = 1024
     SERVER_IP = 'localhost'
-    PORT = 8081
+    PORT = 8085
     DEFAULT_NICKNAME = 'default_nickname'
 
-    #  todo: fix init
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -73,7 +71,7 @@ class MySocket:
         self.sock.send(bytes(message, 'utf8'))
 
     def receive_message(self, sock):
-        return str(sock.recv(self.MSG_SIZE), 'utf8')
+        return str(sock.recv(self.MSG_SIZE), 'utf8')  # adjust to epoll
 
     def close_socket(self):
         print("Default Exiting!!")
@@ -85,10 +83,32 @@ class ClientSocket(MySocket):
         super().__init__()
         self.sock.connect((self.SERVER_IP, self.PORT))
         self.nickname = nickname
+        self.run()
+
+    def __str__(self):
+        return self.nickname
 
     def close_socket(self):
         self.sock.close()
         print("Client exiting")
+
+    def run(self):
+        self.send_message(nickname)
+
+        try:
+            while True:
+                msg = input()
+                if msg == 'q':
+                    print("Quitting...")
+                    break
+                elif msg == 'u':
+                    # todo: send via udp!
+                    pass
+                else:
+                    self.send_message(msg)
+                print('You sent a message: ' + msg)
+        except KeyboardInterrupt as e:
+            self.close_socket()
 
 
 if __name__ == '__main__':
@@ -96,7 +116,6 @@ if __name__ == '__main__':
     print("Now you can use this chat!")
 
     client_socket = ClientSocket(nickname)
-    client_socket.send_message(nickname)
 
 #     todo: add client_sender_worker who checks for message == 'U' - if so, then message is sent via UDP socket
 #
