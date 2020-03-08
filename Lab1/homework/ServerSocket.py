@@ -7,7 +7,6 @@ from Lab1.homework.PythonTcpClient import MySocket
 
 class ServerSocket(MySocket):
     MAX_CLIENTS_COUNT = 5
-    EPOLL_TIMEOUT = 5
 
     def __init__(self):
         super().__init__()
@@ -48,7 +47,7 @@ class ServerSocket(MySocket):
             try:
                 recip.sock.send(bytes(msg_to_send, 'utf8'))
                 print("Sent message: \"" + msg_to_send + "\" to " + recip.nickname)
-            except BrokenPipeError as e:
+            except BrokenPipeError:
                 print("Broken Pipe. Client must have exited")
 
     @staticmethod
@@ -82,5 +81,5 @@ class ServerSocket(MySocket):
                         sender = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
                                                   args=(fd,))
                         sender.start()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             print('Exiting')

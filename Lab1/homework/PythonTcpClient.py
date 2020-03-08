@@ -52,17 +52,18 @@
 #         print(str(data, 'utf8'))
 #
 #
-
+import select
 import socket
 
 # right now only for TCP
+import threading
 
 
 class MySocket:
     MSG_SIZE = 1024
     SERVER_IP = 'localhost'
-    PORT = 8087
-    DEFAULT_NICKNAME = 'default_nickname'
+    PORT = 8091
+    EPOLL_TIMEOUT = 5
 
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,6 +84,13 @@ class ClientSocket(MySocket):
         super().__init__()
         self.sock.connect((self.SERVER_IP, self.PORT))
         self.nickname = nickname
+        self.e = select.epoll()
+        fd = self.sock.fileno()
+        self.e.register(fd, select.EPOLLIN)
+        self.channels = dict()
+        self.channels[fd] = self.sock
+        # self.channels[self.multicast_sock.fileno()] = self.multicast_sock todo
+
         self.run()
 
     def __str__(self):
@@ -93,6 +101,12 @@ class ClientSocket(MySocket):
         print("Client exiting")
 
     def run(self):
+        sender = threading.Thread(target=self.sender)
+        poll_worker = threading.Thread(target=self.poll)
+        sender.start()
+        poll_worker.start()
+
+    def sender(self):
         self.send_message(nickname)
 
         try:
@@ -107,8 +121,18 @@ class ClientSocket(MySocket):
                 else:
                     self.send_message(msg)
                 print('You sent a message: ' + msg)
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             self.close_socket()
+
+    def poll(self):
+        try:
+            while True:
+                events = self.e.poll(self.EPOLL_TIMEOUT)
+                for fd, event_type in events:
+                    if event_type & select.EPOLLIN:
+                        print(self.receive_message(self.channels[fd]))
+        except KeyboardInterrupt:
+            print('Exiting')
 
 
 if __name__ == '__main__':
