@@ -7,7 +7,7 @@ from Lab1.homework.PythonTcpClient import MySocket
 
 class ServerSocket(MySocket):
     MAX_CLIENTS_COUNT = 5
-    EPOLL_TIMEOUT = 1
+    EPOLL_TIMEOUT = 5
 
     def __init__(self):
         super().__init__()
@@ -41,11 +41,15 @@ class ServerSocket(MySocket):
         print("msg_to_send: " + msg_to_send)
 
         recipients = [self.clients[k] for k in self.clients.keys() if k != fd]
-        print("recipients: " + str(recipients.__str__))
+
+        print("recipients: " + str([r.nickname for r in recipients]))
 
         for recip in recipients:
-            recip.sock.send(bytes(msg_to_send, 'utf8'))
-            print("Sent message: " + msg_to_send + " to " + str(recip))
+            try:
+                recip.sock.send(bytes(msg_to_send, 'utf8'))
+                print("Sent message: \"" + msg_to_send + "\" to " + recip.nickname)
+            except BrokenPipeError as e:
+                print("Broken Pipe. Client must have exited")
 
     @staticmethod
     def create_msg_from(nickname, msg):
@@ -73,11 +77,8 @@ class ServerSocket(MySocket):
         try:
             while True:
                 events = self.e.poll(self.EPOLL_TIMEOUT)
-                print("events: " + str(events))
                 for fd, event_type in events:
                     if event_type & select.EPOLLIN:
-                        print("client: " + str(self.clients[fd]))
-
                         sender = threading.Thread(target=self.send_msg_to_all_clients_excluding_sender,
                                                   args=(fd,))
                         sender.start()
