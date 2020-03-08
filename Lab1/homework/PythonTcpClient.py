@@ -15,8 +15,7 @@ class MySocket:
     MSG_SIZE = 1024
     SERVER_IP = '127.0.0.1'
     MULTICAST_IP = '224.0.0.7'  # todo
-    TCP_PORT = 8127
-    UDP_PORT = 9091
+    PORT = 8127
     EPOLL_TIMEOUT = 1
 
     def __init__(self):
@@ -44,7 +43,7 @@ class MySocket:
 class ClientSocket(MySocket):
     def __init__(self, nickname):
         super().__init__()
-        self.tcp_sock.connect((self.SERVER_IP, self.TCP_PORT))
+        self.tcp_sock.connect((self.SERVER_IP, self.PORT))
         self.nickname = nickname
         self.e = select.epoll()
 
@@ -86,11 +85,11 @@ class ClientSocket(MySocket):
                 elif msg == 'u':
                     msg = input('Give me your UDP msg: ')
                     if not self.has_sent_via_udp:
-                        self.send_message_via_udp(nickname, (self.SERVER_IP, self.UDP_PORT))
+                        self.send_message_via_udp(nickname, (self.SERVER_IP, self.PORT))
                         print('[UDP] You sent your NICKNAME: ' + nickname)
                         self.has_sent_via_udp = True
 
-                    self.send_message_via_udp(msg, (self.SERVER_IP, self.UDP_PORT))
+                    self.send_message_via_udp(msg, (self.SERVER_IP, self.PORT))
                     print('[UDP] You sent a message: ' + msg)
 
                 elif msg == 'm':

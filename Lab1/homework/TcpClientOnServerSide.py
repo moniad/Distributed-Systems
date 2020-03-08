@@ -1,12 +1,14 @@
-from Lab1.homework.ClientOnServerSide import ClientOnServerSide
+# from Lab1.homework.ClientOnServerSide import ClientOnServerSide
 
 
-class TcpClientOnServerSide(ClientOnServerSide):  # contains TCP clients' data
-    def __init__(self, tcp_sock, nickname):
-        super().__init__(tcp_sock, nickname)
+class TcpClientOnServerSide:  # contains TCP clients' data
+    def __init__(self, tcp_sock, address, nickname):
+        self.tcp_sock = tcp_sock
+        self.address = address
+        self.nickname = nickname
 
     def __str__(self):
-        return "tcp_sock: " + str(self.sock_or_addr) + ", nickname: " + str(self.nickname)
+        return super().__str__() + ", tcp_sock: " + str(self.tcp_sock)
 
     def send_message_via_tcp(self, message):
-        self.sock_or_addr.send(bytes(message, 'utf8'))
+        self.tcp_sock.send(bytes(message, 'utf8'))
