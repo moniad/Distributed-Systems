@@ -2,7 +2,7 @@ import select
 import threading
 
 from Lab1.homework.ClientOnServerSide import ClientOnServerSide
-from Lab1.homework.PythonTcpClient import MySocket
+from Lab1.homework.Client import MySocket
 
 
 class ServerSocket(MySocket):
@@ -47,18 +47,21 @@ class ServerSocket(MySocket):
 
         print("recipients: " + str([r.nickname for r in recipients]))
 
-        for recip in recipients:
-            try:
+        try:
+            for recip in recipients:
                 recip.tcp_socket.send(bytes(msg_to_send, 'utf8'))
                 print("Sent message: \"" + msg_to_send + "\" to " + recip.nickname)
-            except BrokenPipeError:
-                print("Broken Pipe. Client must have exited")
-                del self.tcp_clients[fd]
+        except BrokenPipeError:
+            print("Broken Pipe. Client must have exited")
+            del self.tcp_clients[fd]
+            self.e.unregister(fd)
 
-                for cl_k in self.udp_clients.keys():
-                    if self.udp_clients[cl_k] == client.nickname:
-                        del self.udp_clients[cl_k]
-                        break
+            for cl_k in self.udp_clients.keys():
+                if self.udp_clients[cl_k] == client.nickname:
+                    del self.udp_clients[cl_k]
+                    break
+            raise BrokenPipeError
+
 
     @staticmethod
     def create_msg_from(nickname, msg):
@@ -95,6 +98,8 @@ class ServerSocket(MySocket):
                         sender.start()
         except KeyboardInterrupt:
             print('Exiting')
+        except BrokenPipeError:
+            print("Client left the chat")
 
     def udp_worker(self):
         while True:
@@ -120,7 +125,7 @@ class ServerSocket(MySocket):
 
             # BOTH CLIENTS MUST HAVE INITIATED UDP COMMUNICATION!!!!!
 
-            # /home/monika/PycharmProjects/DistibutedSystems/venv/bin/python /home/monika/PycharmProjects/DistibutedSystems/Lab1/homework/PythonTcpServer.py
+            # /home/monika/PycharmProjects/DistibutedSystems/venv/bin/python /home/monika/PycharmProjects/DistibutedSystems/Lab1/homework/Server.py
             # New client: cd  127.0.0.1:40506!
             # msg_to_send: cd : mme
             # recipients: []
@@ -138,6 +143,6 @@ class ServerSocket(MySocket):
             #     self._target(*self._args, **self._kwargs)
             #   File "/home/monika/PycharmProjects/DistibutedSystems/Lab1/homework/ServerSocket.py", line 114, in udp_worker
             #     self.send_message_via_udp(msg_to_send, address)
-            #   File "/home/monika/PycharmProjects/DistibutedSystems/Lab1/homework/PythonTcpClient.py", line 78, in send_message_via_udp
+            #   File "/home/monika/PycharmProjects/DistibutedSystems/Lab1/homework/Client.py", line 78, in send_message_via_udp
             #     self.udp_socket.sendto(bytes(message, 'utf8'), addr)
             # TypeError: getsockaddrarg: AF_INET address must be tuple, not int
