@@ -89,7 +89,8 @@ class ClientSocket(MySocket):
                 msg = input()
                 if msg == 'q':
                     print("Quitting...")
-                    break
+                    self.close_socket()
+                    exit(0)
                 elif msg == 'u':
                     if not self.has_sent_via_udp:
                         self.send_message_via_udp(nickname, (self.SERVER_IP, self.PORT))
@@ -106,7 +107,7 @@ class ClientSocket(MySocket):
                 else:
                     self.send_message_via_tcp(msg)
                     print('[TCP] You sent a message: ' + msg)
-        except KeyboardInterrupt:
+        finally:
             self.close_socket()
 
     def poll(self):

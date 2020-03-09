@@ -62,7 +62,6 @@ class ServerSocket(MySocket):
                     break
             raise BrokenPipeError
 
-
     @staticmethod
     def create_msg_from(nickname, msg):
         return nickname + ": " + msg
@@ -104,7 +103,7 @@ class ServerSocket(MySocket):
     def udp_worker(self):
         while True:
             msg, address = self.receive_message_via_udp()
-            print("address: " + str(address))
+            print("UDP: Sender address: " + str(address))
 
             if address not in self.udp_clients.keys():  # socket ports from whose msgs are coming are different for
                 # tcp and udp on my computer and I don't know why - to check it out: c = self.udp_clients[address]
@@ -113,12 +112,14 @@ class ServerSocket(MySocket):
                 msg, address = self.receive_message_via_udp()
 
             msg_to_send = ServerSocket.create_msg_from(self.udp_clients[address], msg)
-            print("msg_to_send: " + msg_to_send)
+            print("Msg_to_send: " + msg_to_send)
 
-            addresses = [a for a in self.udp_clients.keys() if a != address]  # + [a for a in self.tcp_clients.keys() if
-            # a != address]
+            addresses = [a for a in self.udp_clients.keys() if a != address]  # +
+            # addresses = [a for a in self.tcp_clients.keys() if
+            #              a != address and self.tcp_clients[a].nickname != self.udp_clients[address]] // źle są czytane adresy TCP - jako jedna cyfra
+
             for address in addresses:
-                print("address: " + str(address))
+                print("Rec. address: " + str(address))
 
                 print("Sent message: \"" + msg_to_send + "\" to " + str(address))
                 self.send_message_via_udp(msg_to_send, address)
