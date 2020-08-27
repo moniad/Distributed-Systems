@@ -1,0 +1,17 @@
+TeamViewer jest na serwerze o adresie publicznym i pośredniczy między dwoma klientami
+
+STUN i TURN - protokoly stworzone na ptorzebny komunikacji audiowizualnej
+STUN - czy do danego hosta da sie dostac przez jakies publiczne gniazdo (BEZPOSREDNIE POLACZENIE)
+TURN - jest sie nie da bezposrednio (mamy trojkat jak w TV)
+
+protokol QUIC
+
+serwer nie moze naprawic polaczenia z klientem
+
+GRPC:
+- korzysta z serializacji Protocol Buffers (niezależny od języka - można odczytać zserializowaną wiadomość w dowolnym języku) i protokolu HTTP/2 (ma serializację binarną - dużo wydajniejsza niż tekstowa)
+
+2.2 2) ???
+
+
+5 razy mniejsza pamiec potrzebna w proto. okolo 10-20 razy szybsze proto niż java serialization

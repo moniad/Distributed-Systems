@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option java_package = "gen";
+option java_outer_classname = "DueTasksProviderProto";
+
+service Provider {
+    rpc subscribe (Subscription) returns (SubscriptionResponse);
+    rpc listen (SubscriptionRequest) returns (stream DueTasksResponse);
+}
+
+message SubscriptionRequest {
+    string userName = 1;
+}
+
+enum EventType {
+    ASSIGNMENT = 0;
+    TEST = 1;
+    PREPARATION_FOR_CLASSES = 2;
+}
+
+enum Subject {
+    DISTRIBUTED_SYSTEMS = 0;
+    KERNEL_PROGRAMMING = 1;
+    COMPILERS = 2;
+}
+
+enum SubscriptionStatus {
+    SUCCESSFUL = 0;
+    ERROR = 1;
+}
+
+message SubscriptionResponse {
+    string dueTask = 1;
+    SubscriptionStatus status = 2;
+}
+
+
+message Subscription {
+    string userName = 1;
+    string subject = 2;
+    repeated EventType type = 3;
+}
+
+message DueTasksResponse {
+    string subject = 1;
+    EventType type = 2;
+    string dueTaskMessage = 3;
+}

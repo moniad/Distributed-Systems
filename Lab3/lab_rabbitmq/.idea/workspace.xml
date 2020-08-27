@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="968c1e6b-63c5-4429-a0d4-da9b5031b10a" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectId" id="1Zm6WfFoCwfUBSbDnZfIe9X7tJr" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last.edited.regexp" value="Sample,Text" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Zad3" />
+  </component>
+  <component name="RunManager" selected="Application.Z1_Producer">
+    <configuration name="Z1_Consumer" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Z1_Consumer" />
+      <module name="lab_rabbitmq" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Z1_Producer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Z1_Producer" />
+      <module name="lab_rabbitmq" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Z2_Consumer" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Z2_Consumer" />
+      <module name="lab_rabbitmq" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Z2_Producer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Z2_Producer" />
+      <module name="lab_rabbitmq" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.Z1_Consumer" />
+      <item itemvalue="Application.Z1_Producer" />
+      <item itemvalue="Application.Z2_Producer" />
+      <item itemvalue="Application.Z2_Consumer" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Z1_Producer" />
+        <item itemvalue="Application.Z1_Consumer" />
+        <item itemvalue="Application.Z2_Consumer" />
+        <item itemvalue="Application.Z2_Producer" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="968c1e6b-63c5-4429-a0d4-da9b5031b10a" name="Default Changelist" comment="" />
+      <created>1585431954954</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1585431954954</updated>
+      <workItem from="1585431956409" duration="663000" />
+      <workItem from="1585493577381" duration="12496000" />
+      <workItem from="1585831450210" duration="759000" />
+      <workItem from="1587066575394" duration="179000" />
+      <workItem from="1587080634569" duration="720000" />
+      <workItem from="1587119695488" duration="431000" />
+      <workItem from="1587201172604" duration="599000" />
+      <workItem from="1587310394889" duration="635000" />
+      <workItem from="1587313679843" duration="881000" />
+      <workItem from="1587328923584" duration="8435000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="836" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1585515085026">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="836" y="211" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1585515085026" />
+    <state x="1324" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1587066699055">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="1324" y="311" width="424" height="491" key="FileChooserDialogImpl/0.27.1920.1053@0.27.1920.1053" timestamp="1587066699055" />
+    <state width="904" height="278" key="GridCell.Tab.0.bottom" timestamp="1587080746493">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="904" height="278" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1587080746493" />
+    <state width="904" height="278" key="GridCell.Tab.0.center" timestamp="1587080746491">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="904" height="278" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1587080746491" />
+    <state width="904" height="278" key="GridCell.Tab.0.left" timestamp="1587080746490">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="904" height="278" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1587080746490" />
+    <state width="904" height="278" key="GridCell.Tab.0.right" timestamp="1587080746492">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state width="904" height="278" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1587080746492" />
+    <state x="1095" y="381" key="com.intellij.ide.util.TipDialog" timestamp="1587329647241">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="1095" y="381" key="com.intellij.ide.util.TipDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1587329647241" />
+    <state x="1088" y="150" width="703" height="807" key="find.popup" timestamp="1587329964989">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="1088" y="150" width="703" height="807" key="find.popup/0.27.1920.1053@0.27.1920.1053" timestamp="1587329964989" />
+    <state x="1093" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1585494653336">
+      <screen x="0" y="27" width="1920" height="1053" />
+    </state>
+    <state x="1093" y="259" width="672" height="678" key="search.everywhere.popup/0.27.1920.1053@0.27.1920.1053" timestamp="1585494653336" />
+  </component>
+</project>

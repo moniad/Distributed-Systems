@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_package = "gen";
+option java_outer_classname = "ConnectionHealthProto";
+
+service Health {
+    rpc ping (PingRequest) returns (PingReply);
+}
+
+message PingRequest {
+}
+
+message PingReply {
+    string message = 1;
+}

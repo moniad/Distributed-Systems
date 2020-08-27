@@ -1,0 +1,2 @@
+./zkServer2.sh start "./../conf/zoo3.cfg" 
+./zkCli.sh -server 127.0.0.1:2182
